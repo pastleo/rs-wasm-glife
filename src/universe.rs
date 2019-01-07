@@ -1,13 +1,5 @@
 use std::fmt;
 
-#[cfg(target_arch = "wasm32")]
-extern crate wasm_bindgen;
-
-#[cfg(target_arch = "wasm32")]
-use wasm_bindgen::prelude::*;
-
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Cell {
@@ -15,27 +7,11 @@ pub enum Cell {
     Alive = 1,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-#[repr(u8)]
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Cell {
-    Dead = 0,
-    Alive = 1,
-}
-
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
 pub struct Universe {
     width: u32,
     height: u32,
     cells: Vec<Cell>,
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-pub struct Universe {
-    width: u32,
-    height: u32,
-    cells: Vec<Cell>,
+    changes: Vec<bool>,
 }
 
 fn modulo(a: i32, b: i32) -> i32 {
@@ -60,18 +36,22 @@ impl Universe {
         self.get_i(row as i32, column as i32)
     }
 
-    fn new_p(width: u32, height: u32) -> Universe {
+    pub fn new(width: u32, height: u32) -> Universe {
         let cells = (0..width * height).map(|i| {
             if i % 2 == 0 || i % 7 == 0 { Cell::Alive }
             else { Cell::Dead }
-            //Cell::Dead
+        });
+        let changes = cells.clone().map(|c| {
+            if c == Cell::Alive { true }
+            else { false }
         }).collect();
         Universe {
-            width, height, cells
+            width, height, changes,
+            cells: cells.collect(),
         }
     }
 
-    pub fn live_neighbor_cnt(&self, row: u32, column: u32) -> u8 {
+    fn live_neighbor_cnt(&self, row: u32, column: u32) -> u8 {
         let row_i = row as i32;
         let column_i = column as i32;
         let mut cnt = 0;
@@ -84,56 +64,43 @@ impl Universe {
         cnt
     }
 
-    pub fn tick_p(&mut self) {
+    pub fn tick(&mut self) {
         let mut cells_next_tick = self.cells.clone();
+        let mut changes_next_tick = self.changes.clone();
 
         for y in 0..self.height {
             for x in 0..self.width {
-                cells_next_tick[self.get_index(y, x)] =
-                    match (self.get(y, x), self.live_neighbor_cnt(y, x)) {
-                        (Cell::Alive, cnt) if cnt < 2 || cnt > 3 => Cell::Dead,
-                        (Cell::Alive, _) => Cell::Alive,
-                        (Cell::Dead, 3) => Cell::Alive,
-                        (Cell::Dead, _) => Cell::Dead,
-                    }
+                let i = self.get_index(y, x);
+                let cell = self.get(y, x);
+                let cell_next_tick = match (cell, self.live_neighbor_cnt(y, x)) {
+                    (Cell::Alive, cnt) if cnt < 2 || cnt > 3 => Cell::Dead,
+                    (Cell::Alive, _) => Cell::Alive,
+                    (Cell::Dead, 3) => Cell::Alive,
+                    (Cell::Dead, _) => Cell::Dead,
+                };
+
+                changes_next_tick[i] = cell != cell_next_tick;
+                cells_next_tick[i] = cell_next_tick;
             }
         }
 
+        self.changes = changes_next_tick;
         self.cells = cells_next_tick;
     }
 
+    pub fn changed(&self, i: usize) -> bool {
+        self.changes[i]
+    }
+    pub fn toggle(&mut self, i: usize) {
+        let cell = self.cells[i];
+        if cell == Cell::Alive {
+            self.cells[i] = Cell::Dead;
+        } else {
+            self.cells[i] = Cell::Alive;
+        }
+    }
     pub fn sum(&self) -> u32 {
         self.cells.iter().map(|c| *c as u32).sum()
-    }
-}
-
-#[cfg(target_arch = "wasm32")]
-#[wasm_bindgen]
-impl Universe {
-    pub fn newSquare(size: u32) -> Universe {
-        Universe::new_p(size, size)
-    }
-    pub fn new(width: u32, height: u32) -> Universe {
-        Universe::new_p(width, height)
-    }
-    pub fn toString(&self) -> String {
-        self.to_string()
-    }
-    pub fn tick(&mut self) {
-        self.tick_p();
-    }
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-impl Universe {
-    pub fn new_square(size: u32) -> Universe {
-        Universe::new_p(size, size)
-    }
-    pub fn new(width: u32, height: u32) -> Universe {
-        Universe::new_p(width, height)
-    }
-    pub fn tick(&mut self) {
-        self.tick_p();
     }
 }
 
@@ -141,9 +108,9 @@ impl fmt::Display for Universe {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for y in 0..self.height {
             for x in 0..self.width {
-                write!(f, "{}", self.get(y, x));
+                write!(f, "{}", self.get(y, x))?;
             }
-            write!(f, "\n");
+            write!(f, "\n")?;
         }
 
         Ok(())
@@ -153,7 +120,6 @@ impl fmt::Display for Universe {
 impl fmt::Display for Cell {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let symbol = if *self == Cell::Alive { 'A' } else { '_' };
-        write!(f, "{}", symbol);
-        Ok(())
+        write!(f, "{}", symbol)
     }
 }

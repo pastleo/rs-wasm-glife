@@ -3,9 +3,30 @@
   <head>
     <meta charset="utf-8">
     <title>Hello wasm-pack!</title>
+    <style id='size-style'>
+      table#universe tr td {
+        width: 10px;
+        height: 10px;
+      }
+    </style>
+    <style>
+      table#universe tr td {
+        background: #d0f9df;
+      }
+      table#universe tr td.alive {
+        background: #20944a;
+      }
+    </style>
   </head>
   <body>
-    <pre id='universe'>waiting...maybe browser doesn't support?</pre>
+    <h1>Conway's game of life, in wasm by rust</h1>
+    <button id='run-stop'>run/pause</button>
+    <input id='width' placeholder='width'>
+    <input id='height' placeholder='height'>
+    <input id='cell-size' placeholder='cell size (px)'>
+    <button id='reset'>reset</button>
+    <table cellspacing="0" cellpadding="0" id='universe'></table>
+    <h1 id='h1'></h1>
     <script src="./bootstrap.js"></script>
   </body>
 </html>

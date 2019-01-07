@@ -1,5 +1,3 @@
-use std::fmt;
-
 extern crate cfg_if;
 extern crate wasm_bindgen;
 
@@ -19,6 +17,7 @@ cfg_if! {
 }
 
 mod universe;
+use universe::Universe;
 
 #[wasm_bindgen]
 extern {
@@ -39,3 +38,33 @@ pub fn greet() {
     log(&universe.to_string());
 }
 
+#[wasm_bindgen]
+pub struct Game {
+    universe: Universe,
+}
+
+#[wasm_bindgen]
+impl Game {
+    pub fn new(width: u32, height: u32) -> Game {
+        Game {
+            universe: Universe::new(width, height)
+        }
+    }
+
+    #[allow(non_snake_case)]
+    pub fn toString(&self) -> String {
+        self.universe.to_string()
+    }
+    pub fn tick(&mut self) {
+        self.universe.tick();
+    }
+
+    #[allow(non_snake_case)]
+    pub fn isChanged(&self, i: usize) -> bool {
+        self.universe.changed(i)
+    }
+
+    pub fn toggle(&mut self, i: usize) {
+        self.universe.toggle(i);
+    }
+}
