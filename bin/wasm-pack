@@ -1,0 +1,3 @@
+#!/bin/sh
+
+rustup run stable wasm-pack build -d www/wasm

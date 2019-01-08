@@ -56,6 +56,7 @@ wasm-pack publish
 ### install rust and nodejs
 
 ```shell
+yay -S rustup # for archlinux
 rustup toolchain install stable
 rustup default stable
 cargo install cargo-generate

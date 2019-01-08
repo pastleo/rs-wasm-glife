@@ -8,12 +8,7 @@ const sizeStyle = document.getElementById('size-style');
 
 let height = 80;
 let width = 80;
-let running = false;
-let speed = 0;
-
-let game = Game.new(height, width);
-
-let cells;
+let running, speed, game, cells;
 
 const initTable = () => {
   cells = [];
@@ -24,20 +19,11 @@ const initTable = () => {
       cells.push(tr.insertCell(i));
     });
   });
-}
 
-const calSpeed = () => {
-  if(running) {
-    h1.innerText = `speed: ${speed}`;
-    speed = 0;
-  } else {
-    h1.innerText = `paused`;
-  }
 }
-
-setInterval(calSpeed, 1000);
 
 // original toString implementation:
+//initTable();
 //const renderLoop = () => {
   //let i = 0;
   //Array.from(game.toString()).forEach(c => {
@@ -56,18 +42,37 @@ setInterval(calSpeed, 1000);
 //}
 //renderLoop();
 
-const drawAndTick = () => {
+const render = () => {
   cells.forEach((c, i) => {
     if(game.isChanged(i)) {
       c.classList.toggle('alive');
     }
   })
-  game.tick();
 }
+
+const init = () => {
+  game = Game.new(height, width);
+  running = false;
+  speed = 0;
+
+  initTable();
+  render();
+}
+
+const calSpeed = () => {
+  if(running) {
+    h1.innerText = `speed: ${speed}`;
+    speed = 0;
+  } else {
+    h1.innerText = `paused`;
+  }
+}
+setInterval(calSpeed, 1000);
 
 const renderLoop = () => {
   if(!running) { return }
-  drawAndTick();
+  game.tick();
+  render();
   speed++;
 
   requestAnimationFrame(renderLoop);
@@ -86,9 +91,7 @@ document.getElementById('reset').onclick = () => {
   document.getElementById('size-style').innerText = `
     table#universe tr td { width: ${cellSize}px; height: ${cellSize}px; }
   `
-  game = Game.new(height, width);
-  initTable();
-  drawAndTick();
+  init();
 }
 
 table.onmousedown = ({ target }) => {
@@ -100,5 +103,4 @@ table.onmousedown = ({ target }) => {
   }
 }
 
-initTable();
-drawAndTick();
+init();
