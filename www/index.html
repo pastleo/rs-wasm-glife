@@ -2,10 +2,31 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>Hello wasm-pack!</title>
+    <title>Conway's game of life, in wasm by rust</title>
+    <style id='size-style'>
+      table#universe tr td {
+        width: 10px;
+        height: 10px;
+      }
+    </style>
+    <style>
+      table#universe tr td {
+        background: #d0f9df;
+      }
+      table#universe tr td.alive {
+        background: #20944a;
+      }
+    </style>
   </head>
   <body>
-    <noscript>This page contains webassembly and javascript content, please enable javascript in your browser.</noscript>
+    <h1>Conway's game of life, in wasm by rust, <a href="https://github.com/pastleo/rs-wasm-glife" target="_blank">Github Repo</a></h1>
+    <button id='run-stop'>run/pause</button>
+    <input id='width' placeholder='width'>
+    <input id='height' placeholder='height'>
+    <input id='cell-size' placeholder='cell size (px)'>
+    <button id='reset'>reset</button>
+    <table cellspacing="0" cellpadding="0" id='universe'></table>
+    <h1 id='h1'></h1>
     <script src="./bootstrap.js"></script>
   </body>
 </html>
