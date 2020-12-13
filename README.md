@@ -44,19 +44,19 @@ cd my-project
 ### 🛠️ Build with `wasm-pack build`
 
 ```
-wasm-pack build
+rustup run stable wasm-pack build
 ```
 
 ### 🔬 Test in Headless Browsers with `wasm-pack test`
 
 ```
-wasm-pack test --headless --firefox
+rustup run stable wasm-pack test --headless --firefox
 ```
 
 ### 🎁 Publish to NPM with `wasm-pack publish`
 
 ```
-wasm-pack publish
+rustup run stable wasm-pack publish
 ```
 
 ## 🔋 Batteries Included
